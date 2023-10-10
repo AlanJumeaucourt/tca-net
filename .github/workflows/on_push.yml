@@ -58,7 +58,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
-          path: data.json
+          path: .
 
       - name: Install package
         run: pip install -r requirement.txt

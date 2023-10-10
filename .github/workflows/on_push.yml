@@ -40,16 +40,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: my-artifact
-          path: ${{ env.DEVOPS_DIR }}/data.json
+          path: /data.json
   
-      - name: ls devops
-        run: ls ${{ env.DEVOPS_DIR }}
-        shell: sh
-
-      - name: ls
-        run: ls
-        shell: sh   
-
   discordNotif:
     needs: scrapper
     name: discordNotif

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # This reads the environment variables inside .env
 DiscordToken = os.getenv('DiscordToken')
-
+channelId = os.getenv('channelId')
 
 cours_tries = []
 message1 = ""
@@ -116,7 +116,7 @@ with open('data.json', 'r') as fp:
     for c in cours_tries:
         date_debut_cour = datetime.strptime(
             c['Date']+" "+c['Heure'].split("-")[0], "%d/%m/%Y %Hh%M")
-        date_debut_moins_15 = date_debut_cour - timedelta(minutes=15)
+        date_debut_moins_15 = date_debut_cour - timedelta(minutes=999)
 
         if (c["Groupe"] == "4TC" or c["Groupe"] == "4TC-G4"):
 
@@ -155,9 +155,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 
 async def envoyer_message():
-    tcaCourId=1019330268374507593
-    test_id = 776468108038373409  # Remplacez par l'ID du canal Discord cible
-    channel = bot.get_channel(tcaCourId)
+    channel = bot.get_channel(int(channelId))
 
     if channel:
         await channel.send(message1)

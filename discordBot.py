@@ -11,7 +11,10 @@ from dotenv import load_dotenv
 load_dotenv()  # This reads the environment variables inside .env
 DiscordToken = os.getenv('DiscordToken')
 channelId = os.getenv('channelId')
+
 delta = os.getenv('delta')
+if delta == "":
+    delta = 15.0
 
 cours_tries = []
 message1 = ""

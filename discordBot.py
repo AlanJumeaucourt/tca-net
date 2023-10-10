@@ -171,6 +171,7 @@ async def on_ready():
 
     # Appelez la fonction envoyer_message lorsque le bot est prêt
     await envoyer_message()
+    exit()
 
 # Lancez le bot
 bot.run(token=DiscordToken)

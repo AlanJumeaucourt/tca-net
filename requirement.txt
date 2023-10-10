@@ -1,4 +1,4 @@
 icalendar
 bs4
 discord.py
-dotenv
+python-dotenv

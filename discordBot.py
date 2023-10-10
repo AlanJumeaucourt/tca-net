@@ -6,7 +6,7 @@ from discord.ext import commands
 import random
 import os
 from dotenv import load_dotenv
-
+import time
 
 load_dotenv()  # This reads the environment variables inside .env
 DiscordToken = os.getenv('DiscordToken', "NOT FOUND")
@@ -188,6 +188,7 @@ async def on_ready():
 
     # Appelez la fonction envoyer_message lorsque le bot est prêt
     await envoyer_message()
+    time.sleep(3)
     exit()
 
 # Lancez le bot

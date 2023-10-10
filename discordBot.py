@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()  # This reads the environment variables inside .env
 DiscordToken = os.getenv('DiscordToken')
 channelId = os.getenv('channelId')
+delta = os.getenv('delta')
 
 cours_tries = []
 message1 = ""
@@ -116,7 +117,7 @@ with open('data.json', 'r') as fp:
     for c in cours_tries:
         date_debut_cour = datetime.strptime(
             c['Date']+" "+c['Heure'].split("-")[0], "%d/%m/%Y %Hh%M")
-        date_debut_moins_15 = date_debut_cour - timedelta(minutes=999)
+        date_debut_moins_15 = date_debut_cour - timedelta(minutes=float(delta))
 
         if (c["Groupe"] == "4TC" or c["Groupe"] == "4TC-G4"):
 

@@ -9,7 +9,17 @@ from dotenv import load_dotenv
 
 
 load_dotenv()  # This reads the environment variables inside .env
-AuthToken = os.getenv('AuthToken')
+AuthToken = os.getenv('AuthToken', "NOT FOUND")
+
+# Check mandatory variable
+needExit = False
+if AuthToken == "NOT FOUND":
+    print("[ERROR] AuthToken not found in .env, you must set it in .env file to run this programme")
+    needExit = True
+
+if needExit:
+    print("Exiting ...")
+    exit()
 
 
 url = 'https://tc-net.insa-lyon.fr/aff/AffichageEdtPalmGroupe.jsp?promo=4&groupe=4&dateDeb=1696111200000'

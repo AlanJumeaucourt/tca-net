@@ -260,6 +260,8 @@ def getCourBymatiere(matiere):
         exit()
     soup = BeautifulSoup(response.text, 'html.parser')
 
+    print(response)
+
     # Trouvez la structure de la matière
     # structure_matiere = soup.find('b').text.strip()
 
@@ -311,8 +313,8 @@ def getCourBymatiere(matiere):
 cours = []
 cours_tries = []
 
-print(getCourBymatiere("4TC-INS1-2023"))
-exit()
+# print(getCourBymatiere("4TC-INS1-2023"))
+# exit()
 for matiere in matieres:
     if "4TC" in matiere and matiere != "4TC-SIR-2023":
         print(f"Crawling : {matiere}")

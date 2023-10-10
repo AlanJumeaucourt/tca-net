@@ -10,25 +10,28 @@ jobs:
     name: Run the scrapper
     runs-on: ubuntu-latest
     steps:
-    - name: Check-out devops repository
-      uses: actions/checkout@v2
-      with:
-        repository: AlanJumeaucourt/tca-net
-        token: ${{ secrets.GITHUB_TOKEN }}
-        path: ${{ env.DEVOPS_DIR }}
+      - name: Check-out devops repository
+        uses: actions/checkout@v2
+        with:
+          repository: AlanJumeaucourt/tca-net
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.DEVOPS_DIR }}
 
-    - name: Install package
-      run: pip install -r ${{ env.DEVOPS_DIR }}/requirement.txt
-      shell: sh
+      - name: Install package
+        run: pip install -r ${{ env.DEVOPS_DIR }}/requirement.txt
+        shell: sh
 
-    - name: Make .env file base on secrets
-      run: |
-        touch .env
-        echo AuthToken=${{ secrets.AuthToken }} >> .env
-        echo DiscordToken=${{ secrets.DiscordToken }} >> .env
-        cat .env
-      shell: sh  
+      - name: Make .env file base on secrets
+        env:
+          AuthToken: ${{ secrets.AuthToken }}
+          DiscordToken: ${{ secrets.DiscordToken }}
+        run: |
+          touch .env
+          echo AuthToken=${{ secrets.AuthToken }} >> .env
+          echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+          cat .env
+        shell: sh
 
-    - name: Launch crawler.py to scrap the tc-net
-      run: python3 ${{ env.DEVOPS_DIR }}/crawler.py
-      shell: sh
+      - name: Launch crawler.py to scrap the tc-net
+        run: python3 ${{ env.DEVOPS_DIR }}/crawler.py
+        shell: sh

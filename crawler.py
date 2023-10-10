@@ -1,4 +1,3 @@
-import icalendar
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -6,6 +5,7 @@ import json
 import re
 import os
 from dotenv import load_dotenv
+from models import Professor, Room, Course
 
 
 load_dotenv()  # This reads the environment variables inside .env
@@ -287,11 +287,11 @@ def getCourBymatiere(matiere):
         for l in ligne:
             # print(l)
             elements = l.split()
-            elements2 = l.split("  ")
             Enseignant = ""
-            for e in elements2:
-                if "[" in e and "]" in e:
-                    Enseignant = e
+            try:
+                Enseignant = re.findall(r'\[(.*?)\]', l)[0]
+            except:
+                Enseignant = ""
 
             try:
                 autre = re.findall(r'\{(.*?)\}', l)[0]
@@ -325,36 +325,74 @@ cours_tries = []
 
 # print(getCourBymatiere("4TC-INS1-2023"))
 # exit()
-for matiere in matieres:
-    if "4TC" in matiere and matiere != "4TC-SIR-2023":
-        print(f"Crawling : {matiere}")
-        listCour = getCourBymatiere(matiere)
-        for cour in listCour:
-            cours.append(cour)
+# for matiere in matieres:
+#     if "4TC" in matiere and matiere != "4TC-SIR-2023":
+#         print(f"Crawling : {matiere}")
+#         listCour = getCourBymatiere(matiere)
+#         for cour in listCour:
+#             cours.append(cour)
 
 
-cours_tries = sorted(
-    cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
+# cours_tries = sorted(
+#     cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
 
-# with open('data.json', 'r') as fp:
-#     cours_tries = json.load(fp)
+with open('data.json', 'r') as fp:
+    cours_tries = json.load(fp)
 
 print(cours_tries)
+
 
 enseignants = []
 for cour in cours_tries:
     if cour['Enseignant'] not in enseignants:
-        enseignants.append(cour['Enseignant'])
+        if "," in cour['Enseignant']:
+            prof = cour['Enseignant'].split(",")
+            for p in prof:
+                if p not in enseignants:
+                    enseignants.append(p.strip())    
+        else:
+            enseignants.append(cour['Enseignant'])
 
-print(enseignants)
+professors = {name: Professor(trigramm=name) for name in enseignants}
+# print(professors)
+# print(type(professors))
+
+# print("\nprofessors :")
+# for i, prof in professors.items():  
+#     print(f"{prof}")
+# print("\n")
 
 Salles = []
 for cour in cours_tries:
-    if cour['Salle'] not in Salles:
+    if cour['Salle'] not in Salles and cour['Salle']:
         Salles.append(cour['Salle'])
 
-print(Salles)
+rooms = {room: Room(room_name=room) for room in Salles}
+# print(Salles)
 
+# print(rooms)
+# print("\nrooms :")
+# for i, room in rooms.items():
+#     print(f"{room}")
+# print("\n")
 
-with open('data.json', 'w') as fp:
-    json.dump(cours_tries, fp)
+my_objects = {}
+
+courses={}
+for i, data in enumerate(cours_tries):
+    courses[i] = courses.get(i, Course(
+        id=i,
+        start_time=data["Date"],
+        end_time=data["Heure"],
+        course_info=data["Semaine"],
+        professors=[prof for i, prof in professors.items() if i == data["Enseignant"]],
+        room=[room for i, room in rooms.items() if room.room_name == data["Salle"]],
+    ))
+
+print(courses)
+
+# for i, course in courses.items():
+#     print(course)
+
+# with open('data.json', 'w') as fp:
+#     json.dump(cours_tries, fp)

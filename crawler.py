@@ -275,7 +275,7 @@ def getCourBymatiere(matiere):
         # Parser le texte
         cours = []
         for l in ligne:
-            print(l)
+            # print(l)
             elements = l.split()
             elements2 = l.split("  ")
             Enseignant = ""

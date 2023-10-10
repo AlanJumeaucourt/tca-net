@@ -21,6 +21,13 @@ jobs:
       run: pip install -r ${{ env.DEVOPS_DIR }}/requirement.txt
       shell: sh
 
+    - name: Make .env file base on secrets
+      run: |
+        touch .env
+        echo AuthToken=${{ secrets.AuthToken }} >> .env
+        echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+      shell: sh  
+
     - name: Hello World
       run: python3 ${{ env.DEVOPS_DIR }}/crawler.py
       shell: sh

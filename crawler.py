@@ -252,8 +252,12 @@ def getCourBymatiere(matiere):
             'SelectionMatiere': 'ok'
         }
 
-    response = requests.post(url, headers=headers, data=data(matiere=matiere))
-
+    try:
+        response = requests.post(url, headers=headers, data=data(matiere=matiere))
+    except:
+        print(f"Error in requesting {url} for getting {matiere}")
+        print(f"Exiting ...")
+        exit()
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Trouvez la structure de la matière

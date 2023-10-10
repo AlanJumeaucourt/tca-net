@@ -22,5 +22,5 @@ jobs:
       shell: sh
 
     - name: Hello World
-      run: python ${{ env.DEVOPS_DIR }}/crawler.py
+      run: python3 ${{ env.DEVOPS_DIR }}/crawler.py
       shell: sh

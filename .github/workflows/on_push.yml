@@ -27,6 +27,7 @@ jobs:
           DiscordToken: ${{ secrets.DiscordToken }}
         run: |
           touch .env
+          touch data.json
           echo AuthToken=${{ secrets.AuthToken }} >> .env
           echo DiscordToken=${{ secrets.DiscordToken }} >> .env
           cat .env

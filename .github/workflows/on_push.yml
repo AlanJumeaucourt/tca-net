@@ -17,6 +17,10 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         path: ${{ env.DEVOPS_DIR }}
 
+    - name: Install package
+      run: pip install -r requirement.txt
+      shell: sh
+
     - name: Hello World
       run: python ${{ env.DEVOPS_DIR }}/crawler.py
       shell: sh

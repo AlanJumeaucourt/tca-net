@@ -52,16 +52,16 @@ jobs:
         with:
           repository: AlanJumeaucourt/tca-net
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: ${{ env.DEVOPS_DIR }}
+          path: .
 
       - name: Download a single artifact
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
-          path: ${{ env.DEVOPS_DIR }}/data.json
+          path: data.json
 
       - name: Install package
-        run: pip install -r ${{ env.DEVOPS_DIR }}/requirement.txt
+        run: pip install -r requirement.txt
         shell: sh
 
       - name: Make .env file base on secrets
@@ -76,5 +76,5 @@ jobs:
         shell: sh
 
       - name: Launch discordBot.py to send notif to test server
-        run: python3 ${{ env.DEVOPS_DIR }}/discordBot.py
+        run: python3 discordBot.py
         shell: sh

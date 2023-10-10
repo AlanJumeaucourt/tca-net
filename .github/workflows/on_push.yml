@@ -47,7 +47,7 @@ jobs:
         shell: sh
 
       - name: ls
-        run: ls ${{ env.DEVOPS_DIR }}
+        run: ls
         shell: sh   
 
   discordNotif:

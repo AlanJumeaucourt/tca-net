@@ -78,3 +78,41 @@ jobs:
       - name: Launch discordBot.py to send notif to test server
         run: python3 discordBot.py
         shell: sh
+
+  discordNotifModified:
+            needs: scrapper
+            name: discordNotif with delta as 32400
+            runs-on: ubuntu-latest
+            steps:
+              - name: Check-out devops repository
+                uses: actions/checkout@v2
+                with:
+                  repository: AlanJumeaucourt/tca-net
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  path: .
+        
+              - name: Download a single artifact
+                uses: actions/download-artifact@v3
+                with:
+                  name: my-artifact
+                  path: .
+        
+              - name: Install package
+                run: pip install -r requirement.txt
+                shell: sh
+        
+              - name: Make .env file base on secrets
+                env:
+                  channelId: ${{ secrets.channelId }}
+                  DiscordToken: ${{ secrets.DiscordToken }}
+                run: |
+                  touch .env
+                  echo channelId=${{ secrets.channelId }} >> .env
+                  echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+                  echo delta=32400 >> .env
+                  cat .env
+                shell: sh
+        
+              - name: Launch discordBot.py to send notif to test server
+                run: python3 discordBot.py
+                shell: sh

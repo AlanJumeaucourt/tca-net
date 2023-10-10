@@ -6,8 +6,8 @@ env:
   DEVOPS_DIR: devops
 
 jobs:
-  hello-world:
-    name: Hello world
+  scrapper:
+    name: Run the scrapper
     runs-on: ubuntu-latest
     steps:
     - name: Check-out devops repository
@@ -26,8 +26,9 @@ jobs:
         touch .env
         echo AuthToken=${{ secrets.AuthToken }} >> .env
         echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+        cat .env
       shell: sh  
 
-    - name: Hello World
+    - name: Launch crawler.py to scrap the tc-net
       run: python3 ${{ env.DEVOPS_DIR }}/crawler.py
       shell: sh

@@ -257,7 +257,7 @@ def getCourBymatiere(matiere):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Trouvez la structure de la matière
-    structure_matiere = soup.find('b').text.strip()
+    # structure_matiere = soup.find('b').text.strip()
 
     # Trouvez toutes les lignes de données dans la balise <pre>
     data_rows = soup.find_all('pre')

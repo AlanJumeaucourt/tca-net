@@ -1,8 +1,17 @@
 from typing import List
 from datetime import datetime
 
+
 class Professor:
-    def __init__(self, trigramm, first_name=None, last_name=None):
+    
+    def __init__(self, trigramm: str, first_name: str = "", last_name: str = ""):
+        """_summary_
+
+        Args:
+            trigramm (str): Prof's trigramm (ex: "JOE")
+            first_name (str, optional): Prof's first name (ex: "John"). Defaults to "".
+            last_name (str, optional): Prof's last name (ex: "Doe"). Defaults to "".
+        """
         self.trigramm = trigramm
         self.first_name = first_name
         self.last_name = last_name
@@ -13,7 +22,12 @@ class Professor:
 
 
 class Room:
-    def __init__(self, room_name):
+    def __init__(self, room_name: str):
+        """Room object to store room's name and courses
+
+        Args:
+            room_name (str): _description_
+        """
         self.room_name = room_name
         self.courses = []
 

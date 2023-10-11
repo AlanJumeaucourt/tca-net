@@ -1,18 +1,39 @@
 import pickle
 from models import Professor, Room, Course
 from datetime import datetime, timedelta
+
 # Open 3 dict with the objects from crawler.py
 with open('courses.pkl', 'rb') as file:
     courses = pickle.load(file)
+    
+print("\courses :")
+for i, j in courses.items():
+    print(f"{j}")
+print("\n")
 
 with open('rooms.pkl', 'rb') as file:
     rooms = pickle.load(file)
 
+print("\nrooms :")
+for i, j in rooms.items():
+    print(f"{j}")
+print("\n")
+
+
 with open('professors.pkl', 'rb') as file:
     professors = pickle.load(file)
 
+print("\professors :")
+for i, j in courses.items():
+    print(f"{j}")
+print("\n")
+
+
 for i, course in courses.items():
     print(course)
+
+
+
 
 message1 = ""
 # Afficher les cours triés

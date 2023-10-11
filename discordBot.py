@@ -47,7 +47,7 @@ now = datetime.now()
 print(f"now = {now}")
 
 
-def blague_cours(cours):
+def blague_cours(cours):    
     blagues = [
         f"Salut les bolosses, il y a cours de {cours} dans moins de 15 minutes. Préparez-vous à une explosion de connaissances !",
         f"Hey tout le monde, le cours de {cours} commence bientôt. Préparez-vous à décrocher la lune en {cours} !",

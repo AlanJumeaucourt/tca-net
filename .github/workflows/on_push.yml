@@ -39,9 +39,18 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
-          path: *.pkl
-  
+          name: courses
+          path: courses.pkl
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rooms
+          path: rooms.pkl
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: professor
+          path: professor.pkl
   discordNotif:
     needs: scrapper
     name: discordNotif
@@ -54,10 +63,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: .
 
-      - name: Download a single artifact
+      - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: my-artifact
+          name: courses
+          path: .
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: rooms
+          path: .
+           
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: professor
           path: .
 
       - name: Install package

@@ -78,7 +78,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: professors
+          name: professor
           path: .
 
       - name: Install package
@@ -127,7 +127,7 @@ jobs:
               - name: Download artifact
                 uses: actions/download-artifact@v3
                 with:
-                  name: professors
+                  name: professor
                   path: .
         
               - name: Install package

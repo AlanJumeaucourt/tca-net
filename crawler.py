@@ -327,16 +327,16 @@ cours_tries = []
 
 # print(getCourBymatiere("4TC-INS1-2023"))
 # exit()
-# for matiere in matieres:
-#     if "4TC" in matiere and matiere != "4TC-SIR-2023":
-#         print(f"Crawling : {matiere}")
-#         listCour = getCourBymatiere(matiere)
-#         for cour in listCour:
-#             cours.append(cour)
+for matiere in matieres:
+    if "4TC" in matiere and matiere != "4TC-SIR-2023":
+        print(f"Crawling : {matiere}")
+        listCour = getCourBymatiere(matiere)
+        for cour in listCour:
+            cours.append(cour)
 
 
-# cours_tries = sorted(
-#     cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
+cours_tries = sorted(
+    cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
 
 with open('data.json', 'r') as fp:
     cours_tries = json.load(fp)

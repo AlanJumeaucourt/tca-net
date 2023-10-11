@@ -163,3 +163,4 @@ cython_debug/
 data.json
 credentials.json
 token.json
+*.pkl

@@ -338,8 +338,8 @@ for matiere in matieres:
 cours_tries = sorted(
     cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
 
-with open('data.json', 'r') as fp:
-    cours_tries = json.load(fp)
+# with open('data.json', 'r') as fp:
+#     cours_tries = json.load(fp)
 
 print(cours_tries)
 

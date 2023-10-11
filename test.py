@@ -1,63 +1,48 @@
-from __future__ import print_function
+import pickle
+from models import Professor, Room, Course
+from datetime import datetime, timedelta
+# Open 3 dict with the objects from crawler.py
+with open('courses.pkl', 'rb') as file:
+    courses = pickle.load(file)
 
-import datetime
-import os.path
+with open('rooms.pkl', 'rb') as file:
+    rooms = pickle.load(file)
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+with open('professors.pkl', 'rb') as file:
+    professors = pickle.load(file)
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+for i, course in courses.items():
+    print(course)
 
+message1 = ""
+# Afficher les cours triés
+for i, course in courses.items():
+    date_debut_moins_15 = course.start_time - timedelta(minutes=float(99))
 
-def main():
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
-    """
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+    if (course.group == "4TC" or course.group == "4TC-G4"):
+
+        if date_debut_moins_15 <= datetime.now() <= course.start_time:
+            print(course)
+            print("in between")
+            print(f"date_debut_cour : {course.start_time}")
+            print(f"date_debut_moins_15 : {date_debut_moins_15}")
+            message1 = f"""@everyone {("**" + course.matiere + "**")}
+
+**Infos :**
+- **Matière :** {course.matiere}
+- **Date et Heure :** {course.start_time}
+- **Groupe :** {course.group}
+- **Type :** {course.group}
+- **Enseignant :** {", ".join(str(room) for room in course.professors)}
+- **Salle :** {", ".join(str(room) for room in course.rooms)}
+- **Autres :** {course.course_info}
+"""
+
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+            pass
+if message1 == "":
+    print("message is empty, no courses in less than 15min")
+    print("Exiting ...")
+    exit()
 
-    try:
-        service = build('calendar', 'v3', credentials=creds)
-
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
-        events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-        events = events_result.get('items', [])
-
-        if not events:
-            print('No upcoming events found.')
-            return
-
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
-
-    except HttpError as error:
-        print('An error occurred: %s' % error)
-
-
-if __name__ == '__main__':
-    main()
+print(message1)

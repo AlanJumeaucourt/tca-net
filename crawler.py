@@ -6,6 +6,7 @@ import re
 import os
 from dotenv import load_dotenv
 from models import Professor, Room, Course
+import pickle
 
 
 load_dotenv()  # This reads the environment variables inside .env
@@ -285,11 +286,12 @@ def getCourBymatiere(matiere):
         # Parser le texte
         cours = []
         for l in ligne:
-            # print(l)
+            print(l)
             elements = l.split()
             Enseignant = ""
             try:
                 Enseignant = re.findall(r'\[(.*?)\]', l)[0]
+                print(Enseignant)
             except:
                 Enseignant = ""
 
@@ -341,26 +343,26 @@ with open('data.json', 'r') as fp:
 
 print(cours_tries)
 
-
+print("test")
 enseignants = []
 for cour in cours_tries:
     if cour['Enseignant'] not in enseignants:
         if "," in cour['Enseignant']:
             prof = cour['Enseignant'].split(",")
             for p in prof:
-                if p not in enseignants:
-                    enseignants.append(p.strip())    
+                if p not in enseignants and "Cours" not in p:
+                    enseignants.append(p.strip('{}[] '))
         else:
-            enseignants.append(cour['Enseignant'])
+            enseignants.append(str(cour['Enseignant']).strip().strip("[]"))
 
 professors = {name: Professor(trigramm=name) for name in enseignants}
 # print(professors)
 # print(type(professors))
 
-# print("\nprofessors :")
-# for i, prof in professors.items():  
-#     print(f"{prof}")
-# print("\n")
+print("\nprofessors :")
+for i, prof in professors.items():  
+    print(f"{prof}")
+print("\n")
 
 Salles = []
 for cour in cours_tries:
@@ -370,29 +372,41 @@ for cour in cours_tries:
 rooms = {room: Room(room_name=room) for room in Salles}
 # print(Salles)
 
-# print(rooms)
-# print("\nrooms :")
-# for i, room in rooms.items():
-#     print(f"{room}")
-# print("\n")
+print(rooms)
+print("\nrooms :")
+for i, room in rooms.items():
+    print(f"{room}")
+print("\n")
 
-my_objects = {}
 
 courses={}
 for i, data in enumerate(cours_tries):
+    start_time = datetime.strptime(data["Date"]+" "+data["Heure"].split("-")[0], "%d/%m/%Y %Hh%M")
+    end_time = datetime.strptime(data["Date"]+" "+data["Heure"].split("-")[1], "%d/%m/%Y %Hh%M")
     courses[i] = courses.get(i, Course(
         id=i,
-        start_time=data["Date"],
-        end_time=data["Heure"],
-        course_info=data["Semaine"],
+        matiere=data["Matiere"],
+        group=data["Groupe"],
+        start_time=start_time,
+        end_time=end_time,
+        course_info=data["Autres"],
         professors=[prof for i, prof in professors.items() if i == data["Enseignant"]],
-        room=[room for i, room in rooms.items() if room.room_name == data["Salle"]],
+        rooms=[room for i, room in rooms.items() if room.room_name == data["Salle"]],
     ))
 
-print(courses)
+# print(courses)
 
-# for i, course in courses.items():
-#     print(course)
+for i, course in courses.items():
+    print(course)
 
 # with open('data.json', 'w') as fp:
 #     json.dump(cours_tries, fp)
+
+with open('courses.pkl', 'wb') as fp:
+    pickle.dump(courses, fp)
+
+with open('rooms.pkl', 'wb') as fp:
+    pickle.dump(rooms, fp)
+
+with open('professors.pkl', 'wb') as fp:
+    pickle.dump(professors, fp)

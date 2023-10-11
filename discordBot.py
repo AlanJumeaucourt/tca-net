@@ -7,6 +7,7 @@ import random
 import os
 from dotenv import load_dotenv
 import time
+import pickle
 
 load_dotenv()  # This reads the environment variables inside .env
 DiscordToken = os.getenv('DiscordToken', "NOT FOUND")
@@ -28,6 +29,16 @@ if needExit:
 
 
 delta = os.getenv('delta', 15)
+
+# Open 3 dict with the objects from crawler.py
+with open('courses.pkl', 'rb') as file:
+    courses = pickle.load(file)
+
+with open('rooms.pkl', 'rb') as file:
+    rooms = pickle.load(file)
+
+with open('professors.pkl', 'rb') as file:
+    professors = pickle.load(file)
 
 cours_tries = []
 message1 = ""
@@ -126,40 +137,36 @@ def blague_cours(cours):
     return blague_aleatoire
 
 
-with open('data.json', 'r') as fp:
-    cours_tries = json.load(fp)
+message1 = ""
+# Afficher les cours triés
+for i, course in courses.items():
+    date_debut_moins_15 = course.start_time - timedelta(minutes=float(99))
 
-    # Afficher les cours triés
-    for c in cours_tries:
-        date_debut_cour = datetime.strptime(
-            c['Date']+" "+c['Heure'].split("-")[0], "%d/%m/%Y %Hh%M")
-        date_debut_moins_15 = date_debut_cour - timedelta(minutes=float(delta))
+    if (course.group == "4TC" or course.group == "4TC-G4"):
 
-        if (c["Groupe"] == "4TC" or c["Groupe"] == "4TC-G4"):
-
-            if date_debut_moins_15 <= now <= date_debut_cour:
-                print(c)
-                print("in between")
-                print(f"date_debut_cour : {date_debut_cour}")
-                print(f"date_debut_moins_15 : {date_debut_moins_15}")
-                message1 = f"""@everyone {blague_cours("**" + c['Matiere'] + "**")}
+        if date_debut_moins_15 <= datetime.now() <= course.start_time:
+            print(course)
+            print("in between")
+            print(f"date_debut_cour : {course.start_time}")
+            print(f"date_debut_moins_15 : {date_debut_moins_15}")
+            message1 = f"""@everyone {("**" + course.matiere + "**")}
 
 **Infos :**
-- **Matière :** {c['Matiere']}
-- **Date et Heure :** {c['Date']} de {c['Heure']}
-- **Groupe :** {c['Groupe']}
-- **Type :** {c['Type']}
-- **Enseignant :** {c['Enseignant']}
-- **Salle :** {c['Salle']}
-- **Autres :** {c['Autres']}
+- **Matière :** {course.matiere}
+- **Date et Heure :** {course.start_time}
+- **Groupe :** {course.group}
+- **Type :** {course.group}
+- **Enseignant :** {", ".join(str(room) for room in course.professors)}
+- **Salle :** {", ".join(str(room) for room in course.rooms)}
+- **Autres :** {course.course_info}
 """
 
-            else:
-                pass
-    if message1 == "":
-        print("message is empty, no courses in less than 15min")
-        print("Exiting ...")
-        exit()
+        else:
+            pass
+if message1 == "":
+    print("message is empty, no courses in less than 15min")
+    print("Exiting ...")
+    exit()
 
 intents = discord.Intents.default()
 intents.typing = False  # Désactive la surveillance de la frappe

@@ -338,9 +338,6 @@ for matiere in matieres:
 cours_tries = sorted(
     cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
 
-# with open('data.json', 'r') as fp:
-#     cours_tries = json.load(fp)
-
 print(cours_tries)
 
 print("test")
@@ -398,9 +395,6 @@ for i, data in enumerate(cours_tries):
 
 for i, course in courses.items():
     print(course)
-
-# with open('data.json', 'w') as fp:
-#     json.dump(cours_tries, fp)
 
 with open('courses.pkl', 'wb') as fp:
     pickle.dump(courses, fp)

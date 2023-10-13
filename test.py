@@ -1,6 +1,8 @@
 import pickle
 from models import Professor, Room, Course
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
 # Open 3 dict with the objects from crawler.py
 with open('courses.pkl', 'rb') as file:
@@ -23,7 +25,7 @@ print("\n")
 with open('professors.pkl', 'rb') as file:
     professors = pickle.load(file)
 
-print("\professors :")
+print("\n professors :")
 for i, j in courses.items():
     print(f"{j}")
 print("\n")
@@ -32,21 +34,21 @@ print("\n")
 for i, course in courses.items():
     print(course)
 
-
-
+load_dotenv()  # This reads the environment variables inside .env
+delta = os.getenv('delta', 15)
 
 message1 = ""
 # Afficher les cours triés
 for i, course in courses.items():
-    date_debut_moins_15 = course.start_time - timedelta(minutes=float(99))
+    start_date_minus_delta = course.start_time - timedelta(minutes=float(delta))
 
     if (course.group == "4TC" or course.group == "4TC-G4"):
 
-        if date_debut_moins_15 <= datetime.now() <= course.start_time:
+        if start_date_minus_delta <= datetime.now() <= course.start_time:
             print(course)
             print("in between")
             print(f"date_debut_cour : {course.start_time}")
-            print(f"date_debut_moins_15 : {date_debut_moins_15}")
+            print(f"date_debut_moins_15 : {start_date_minus_delta}")
             message1 = f"""@everyone {("**" + course.matiere + "**")}
 
 **Infos :**
@@ -59,10 +61,11 @@ for i, course in courses.items():
 - **Autres :** {course.course_info}
 """
 
+
         else:
             pass
 if message1 == "":
-    print("message is empty, no courses in less than 15min")
+    print(f"message is empty, no courses in less than {delta} minutes")
     print("Exiting ...")
     exit()
 

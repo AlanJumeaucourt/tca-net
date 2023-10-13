@@ -26,7 +26,7 @@ class Room:
         """Room object to store room's name and courses
 
         Args:
-            room_name (str): _description_
+            room_name (str): room's name (ex: "TD F")
         """
         self.room_name = room_name
         self.courses = []
@@ -37,6 +37,18 @@ class Room:
 
 class Course:
     def __init__(self, id: int, matiere: str, group: str, start_time: datetime, end_time: datetime, course_info: str = "", professors: List[Professor] = [], rooms: List[Room] = []):
+        """Course object to store course's informations
+
+        Args:
+            id (int): unique identifier
+            matiere (str): base name of the course (ex: "4TC-ANG1-2023")
+            group (str): tc's group (ex: "4TC or 4-TC-G4")
+            start_time (datetime): start time of the course
+            end_time (datetime): end time of the course
+            course_info (str, optional): any others information about the course . Defaults to "".
+            professors (List[Professor], optional): list of professor'object . Defaults to [].
+            rooms (List[Room], optional): list of rooms. Defaults to [].
+        """
         self.id = id
         self.matiere = matiere
         self.group = group

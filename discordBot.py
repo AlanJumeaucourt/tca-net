@@ -159,7 +159,7 @@ def next_course_from_time(time: datetime, group: list = []):
 def create_message_for_discord_bot(time: datetime, delta: float):
     course = next_course_from_time(
         time=datetime.now(), group=["4TC", "4TC-G4"])
-    
+
     start_date_minus_delta = course.start_time - \
         timedelta(minutes=float(delta))
 
@@ -179,8 +179,10 @@ def create_message_for_discord_bot(time: datetime, delta: float):
 
     else:
         return None
-    
-message = create_message_for_discord_bot(time=datetime.now(), delta=float(delta))
+
+
+message = create_message_for_discord_bot(
+    time=datetime.now(), delta=float(delta))
 if message is None:
     print(f"message is empty, no courses in less than {delta} minutes")
     print("Exiting ...")
@@ -194,6 +196,8 @@ intents.presences = False  # Désactive la surveillance des présences (status)
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Fonction pour envoyer un message
+
+
 async def envoyer_message():
     channel = bot.get_channel(int(channelId))
 
@@ -203,6 +207,8 @@ async def envoyer_message():
         print("Le canal n'a pas été trouvé.")
 
 # Événement de démarrage du bot
+
+
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user.name}')

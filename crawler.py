@@ -400,29 +400,29 @@ def dump_data():
 read_env()
 
 baseCourses = getAllCourses()
-print(baseCourses)
+# print(baseCourses)
 
 professors = get_professors()
-print(professors)
+# print(professors)
 
-print("\nprofessors :")
-for i, prof in professors.items():
-    print(f"{prof}")
-print("\n")
+# print("\nprofessors :")
+# for i, prof in professors.items():
+#     print(f"{prof}")
+# print("\n")
 
 rooms = get_rooms()
-print(rooms)
+# print(rooms)
 
-print("\nrooms :")
-for i, room in rooms.items():
-    print(f"{room}")
-print("\n")
+# print("\nrooms :")
+# for i, room in rooms.items():
+#     print(f"{room}")
+# print("\n")
 
 courses = get_courses()
-print(courses)
+# print(courses)
 
-for i, course in courses.items():
-    print(course)
+# for i, course in courses.items():
+#     print(course)
 
 
 dump_data()

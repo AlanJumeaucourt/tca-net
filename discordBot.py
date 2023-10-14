@@ -1,6 +1,5 @@
 # IMPORT DISCORD.PY. ALLOWS ACCESS TO DISCORD'S API.
 import discord
-import json
 from datetime import datetime, timedelta
 from discord.ext import commands
 import random
@@ -41,13 +40,13 @@ with open('professors.pkl', 'rb') as file:
     professors = pickle.load(file)
 
 cours_tries = []
-message1 = ""
+message = ""
 now = datetime.now()
 
 print(f"now = {now}")
 
 
-def blague_cours(cours):    
+def blague_cours(cours):
     blagues = [
         f"Salut les bolosses, il y a cours de {cours} dans moins de 15 minutes. Préparez-vous à une explosion de connaissances !",
         f"Hey tout le monde, le cours de {cours} commence bientôt. Préparez-vous à décrocher la lune en {cours} !",
@@ -137,34 +136,50 @@ def blague_cours(cours):
     return blague_aleatoire
 
 
-message1 = ""
-# Afficher les cours triés
-for i, course in courses.items():
-    start_date_minus_delta = course.start_time - timedelta(minutes=float(delta))
+def next_course_from_time(time: datetime, group: list = []):
+    """Return next course from the time and group filter is possible
 
-    if (course.group == "4TC" or course.group == "4TC-G4"):
+    Args:
+        time (datetime): Return next course from this time
+        group (list, optional): Group filter. Defaults to [].
 
-        if start_date_minus_delta <= datetime.now() <= course.start_time:
-            print(course)
-            print("in between")
-            print(f"date_debut_cour : {course.start_time}")
-            print(f"date_debut_moins_15 : {start_date_minus_delta}")
-            message1 = f"""@everyone {("**" + course.matiere + "**")}
-
-**Infos :**
-- **Matière :** {course.matiere}
-- **Date et Heure :** {course.start_time}
-- **Groupe :** {course.group}
-- **Type :** {course.group}
-- **Enseignant :** {", ".join(str(room) for room in course.professors)}
-- **Salle :** {", ".join(str(room) for room in course.rooms)}
-- **Autres :** {course.course_info}
-"""
-
+    Returns:
+        Course: _description_
+    """
+    for i, course in courses.items():
+        if group:
+            if (course.group in group):
+                if course.start_time >= time:
+                    return course
         else:
-            pass
-if message1 == "":
-    print("message is empty, no courses in less than 15min")
+            if course.start_time >= time:
+                return course
+
+
+def create_message_for_discord_bot(time: datetime, delta: float):
+    course = next_course_from_time(
+        time=datetime.now(), group=["4TC", "4TC-G4"])
+    
+    start_date_minus_delta = course.start_time - \
+        timedelta(minutes=float(delta))
+
+    if start_date_minus_delta <= datetime.now() <= course.start_time:
+        print(course)
+        return f"""@everyone {("**" + course.matiere + "**")}
+
+    **Infos :**
+    - **Matière :** {course.matiere}
+    - **Date et Heure :** {course.start_time}
+    - **Groupe :** {course.group}
+    - **Type :** {course.group}
+    - **Enseignant :** {", ".join(str(room) for room in course.professors)}
+    - **Salle :** {", ".join(str(room) for room in course.rooms)}
+    - **Autres infos :** {course.course_info}
+    """
+
+message = create_message_for_discord_bot(time=datetime.now(), delta=float(delta))
+if message == "":
+    print(f"message is empty, no courses in less than {delta} minutes")
     print("Exiting ...")
     exit()
 
@@ -176,19 +191,15 @@ intents.presences = False  # Désactive la surveillance des présences (status)
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Fonction pour envoyer un message
-
-
 async def envoyer_message():
     channel = bot.get_channel(int(channelId))
 
     if channel:
-        await channel.send(message1)
+        await channel.send(message)
     else:
         print("Le canal n'a pas été trouvé.")
 
 # Événement de démarrage du bot
-
-
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user.name}')

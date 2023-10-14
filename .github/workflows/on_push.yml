@@ -37,17 +37,20 @@ jobs:
         run: python3 ${{ env.DEVOPS_DIR }}/crawler.py
         shell: sh
 
-      - uses: actions/upload-artifact@v3
+      - name: upload courses.pkl artifact
+        uses: actions/upload-artifact@v3
         with:
           name: courses
           path: courses.pkl
 
-      - uses: actions/upload-artifact@v3
+      - name: upload rooms.pkl artifact
+        uses: actions/upload-artifact@v3
         with:
           name: rooms
           path: rooms.pkl
 
-      - uses: actions/upload-artifact@v3
+      - name : upload professors.pkl artifact
+        uses: actions/upload-artifact@v3
         with:
           name: professors
           path: professors.pkl
@@ -63,19 +66,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: .
 
-      - name: Download artifact
+      - name: Download course.pkl artifact
         uses: actions/download-artifact@v3
         with:
           name: courses
           path: .
 
-      - name: Download artifact
+      - name: Download rooms.pkl artifact
         uses: actions/download-artifact@v3
         with:
           name: rooms
           path: .
            
-      - name: Download artifact
+      - name: Download professors.pkl artifact
         uses: actions/download-artifact@v3
         with:
           name: professors
@@ -112,19 +115,19 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   path: .
         
-              - name: Download artifact
+              - name: Download course.pkl artifact
                 uses: actions/download-artifact@v3
                 with:
                   name: courses
                   path: .
           
-              - name: Download artifact
+              - name: Download rooms.pkl artifact
                 uses: actions/download-artifact@v3
                 with:
                   name: rooms
                   path: .
                      
-              - name: Download artifact
+              - name: Download professors.pkl artifact
                 uses: actions/download-artifact@v3
                 with:
                   name: professors

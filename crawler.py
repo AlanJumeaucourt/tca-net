@@ -9,21 +9,21 @@ from models import Professor, Room, Course
 import pickle
 
 
-load_dotenv()  # This reads the environment variables inside .env
-AuthToken = os.getenv('AuthToken', "NOT FOUND")
+def read_env():
+    load_dotenv()  # This reads the environment variables inside .env
+    global AuthToken
+    AuthToken = os.getenv('AuthToken', "NOT FOUND")
 
-# Check mandatory variable
-needExit = False
-if AuthToken == "NOT FOUND":
-    print("[ERROR] AuthToken not found in .env, you must set it in .env file to run this programme")
-    needExit = True
+    # Check mandatory variable
+    needExit = False
+    if AuthToken == "NOT FOUND":
+        print("[ERROR] AuthToken not found in .env, you must set it in .env file to run this programme")
+        needExit = True
 
-if needExit:
-    print("Exiting ...")
-    exit()
+    if needExit:
+        print("Exiting ...")
+        exit()
 
-
-url = 'https://tc-net.insa-lyon.fr/aff/AffichageEdtPalmGroupe.jsp?promo=4&groupe=4&dateDeb=1696111200000'
 
 allLocations = []
 linkLocationMaps = {"1-Amphi huma ouest": "",
@@ -264,7 +264,8 @@ def getCourBymatiere(matiere):
         }
 
     try:
-        response = requests.post(url, headers=headers, data=data(matiere=matiere))
+        response = requests.post(url, headers=headers,
+                                 data=data(matiere=matiere))
     except:
         print(f"Error in requesting {url} for getting {matiere}")
         print(f"Exiting ...")
@@ -284,14 +285,14 @@ def getCourBymatiere(matiere):
         ligne = str(data_rows[0]).strip().split('\n')[1:-1]
 
         # Parser le texte
-        cours = []
+        baseCourses = []
         for l in ligne:
-            print(l)
+            # print(l)
             elements = l.split()
             Enseignant = ""
             try:
                 Enseignant = re.findall(r'\[(.*?)\]', l)[0]
-                print(Enseignant)
+                # print(Enseignant)
             except:
                 Enseignant = ""
 
@@ -307,7 +308,7 @@ def getCourBymatiere(matiere):
 
             if salle == "000000000":
                 salle = "Pas de salle (000000000)"
-            cours.append({
+            baseCourses.append({
                 "Matiere": matiere,
                 # Enlève la virgule à la fin de la semaine
                 "Semaine": elements[1][:-1],
@@ -319,88 +320,109 @@ def getCourBymatiere(matiere):
                 "Salle": salle,
                 "Autres": autre,
             })
-        return cours
+        return baseCourses
 
 
-cours = []
-cours_tries = []
+def getAllCourses():
+    baseCourses = []
+    for matiere in matieres:
+        if "4TC" in matiere and matiere != "4TC-SIR-2023":
+            print(f"Crawling : {matiere}")
+            listCour = getCourBymatiere(matiere)
+            for course in listCour:
+                baseCourses.append(course)
 
-# print(getCourBymatiere("4TC-INS1-2023"))
-# exit()
-for matiere in matieres:
-    if "4TC" in matiere and matiere != "4TC-SIR-2023":
-        print(f"Crawling : {matiere}")
-        listCour = getCourBymatiere(matiere)
-        for cour in listCour:
-            cours.append(cour)
+    sorted_courses = sorted(
+        baseCourses, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
+
+    return sorted_courses
 
 
-cours_tries = sorted(
-    cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
+def get_professors():
+    enseignants = []
+    for course in baseCourses:
+        if course['Enseignant'] not in enseignants:
+            if "," in course['Enseignant']:
+                prof = course['Enseignant'].split(",")
+                for p in prof:
+                    if p not in enseignants and "Cours" not in p:
+                        enseignants.append(p.strip('{}[] '))
+            else:
+                enseignants.append(
+                    str(course['Enseignant']).strip().strip("[]"))
 
-print(cours_tries)
+    return {name: Professor(trigramm=name) for name in enseignants}
 
-print("test")
-enseignants = []
-for cour in cours_tries:
-    if cour['Enseignant'] not in enseignants:
-        if "," in cour['Enseignant']:
-            prof = cour['Enseignant'].split(",")
-            for p in prof:
-                if p not in enseignants and "Cours" not in p:
-                    enseignants.append(p.strip('{}[] '))
-        else:
-            enseignants.append(str(cour['Enseignant']).strip().strip("[]"))
 
-professors = {name: Professor(trigramm=name) for name in enseignants}
-# print(professors)
-# print(type(professors))
+def get_rooms():
+    Salles = []
+
+    for course in baseCourses:
+        if course['Salle'] not in Salles and course['Salle']:
+            Salles.append(course['Salle'])
+
+    return {room: Room(room_name=room) for room in Salles}
+
+
+def get_courses():
+    courses = {}
+    for i, data in enumerate(baseCourses):
+        start_time = datetime.strptime(
+            data["Date"]+" "+data["Heure"].split("-")[0], "%d/%m/%Y %Hh%M")
+        end_time = datetime.strptime(
+            data["Date"]+" "+data["Heure"].split("-")[1], "%d/%m/%Y %Hh%M")
+        courses[i] = courses.get(i, Course(
+            id=i,
+            matiere=data["Matiere"],
+            group=data["Groupe"],
+            start_time=start_time,
+            end_time=end_time,
+            course_info=data["Autres"],
+            professors=[prof for i, prof in professors.items() if i ==
+                        data["Enseignant"]],
+            rooms=[room for i, room in rooms.items() if room.room_name ==
+                   data["Salle"]],
+        ))
+    return courses
+
+
+def dump_data():
+    with open('baseCourses.pkl', 'wb') as fp:
+        pickle.dump(courses, fp)
+
+    with open('rooms.pkl', 'wb') as fp:
+        pickle.dump(rooms, fp)
+
+    with open('professors.pkl', 'wb') as fp:
+        pickle.dump(professors, fp)
+
+
+read_env()
+
+baseCourses = getAllCourses()
+print(baseCourses)
+
+professors = get_professors()
+print(professors)
 
 print("\nprofessors :")
-for i, prof in professors.items():  
+for i, prof in professors.items():
     print(f"{prof}")
 print("\n")
 
-Salles = []
-for cour in cours_tries:
-    if cour['Salle'] not in Salles and cour['Salle']:
-        Salles.append(cour['Salle'])
-
-rooms = {room: Room(room_name=room) for room in Salles}
-# print(Salles)
-
+rooms = get_rooms()
 print(rooms)
+
 print("\nrooms :")
 for i, room in rooms.items():
     print(f"{room}")
 print("\n")
 
-
-courses={}
-for i, data in enumerate(cours_tries):
-    start_time = datetime.strptime(data["Date"]+" "+data["Heure"].split("-")[0], "%d/%m/%Y %Hh%M")
-    end_time = datetime.strptime(data["Date"]+" "+data["Heure"].split("-")[1], "%d/%m/%Y %Hh%M")
-    courses[i] = courses.get(i, Course(
-        id=i,
-        matiere=data["Matiere"],
-        group=data["Groupe"],
-        start_time=start_time,
-        end_time=end_time,
-        course_info=data["Autres"],
-        professors=[prof for i, prof in professors.items() if i == data["Enseignant"]],
-        rooms=[room for i, room in rooms.items() if room.room_name == data["Salle"]],
-    ))
-
-# print(courses)
+courses = get_courses()
+print(courses)
 
 for i, course in courses.items():
     print(course)
 
-with open('courses.pkl', 'wb') as fp:
-    pickle.dump(courses, fp)
 
-with open('rooms.pkl', 'wb') as fp:
-    pickle.dump(rooms, fp)
-
-with open('professors.pkl', 'wb') as fp:
-    pickle.dump(professors, fp)
+dump_data()

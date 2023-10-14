@@ -177,8 +177,11 @@ def create_message_for_discord_bot(time: datetime, delta: float):
     - **Autres infos :** {course.course_info}
     """
 
+    else:
+        return None
+    
 message = create_message_for_discord_bot(time=datetime.now(), delta=float(delta))
-if message == "":
+if message is None:
     print(f"message is empty, no courses in less than {delta} minutes")
     print("Exiting ...")
     exit()

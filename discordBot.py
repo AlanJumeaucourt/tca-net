@@ -39,12 +39,6 @@ with open('rooms.pkl', 'rb') as file:
 with open('professors.pkl', 'rb') as file:
     professors = pickle.load(file)
 
-cours_tries = []
-message = ""
-now = datetime.now()
-
-print(f"now = {now}")
-
 
 def blague_cours(cours):
     blagues = [

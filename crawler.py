@@ -387,7 +387,7 @@ def get_courses():
 
 
 def dump_data():
-    with open('baseCourses.pkl', 'wb') as fp:
+    with open('courses.pkl', 'wb') as fp:
         pickle.dump(courses, fp)
 
     with open('rooms.pkl', 'wb') as fp:

@@ -18,7 +18,7 @@ jobs:
           path: ${{ env.DEVOPS_DIR }}
 
       - name: Install package
-        run: pip install -r ${{ env.DEVOPS_DIR }}/requirement.txt
+        run: pip install -r ${{ env.DEVOPS_DIR }}/requirements.txt
         shell: sh
 
       - name: Make .env file base on secrets
@@ -85,7 +85,7 @@ jobs:
           path: .
 
       - name: Install package
-        run: pip install -r requirement.txt
+        run: pip install -r requirements.txt
         shell: sh
 
       - name: Make .env file base on secrets
@@ -134,7 +134,7 @@ jobs:
                   path: .
         
               - name: Install package
-                run: pip install -r requirement.txt
+                run: pip install -r requirements.txt
                 shell: sh
         
               - name: Make .env file base on secrets

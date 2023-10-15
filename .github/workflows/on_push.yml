@@ -23,13 +23,13 @@ jobs:
 
       - name: Make .env file base on secrets
         env:
-          AuthToken: ${{ secrets.AuthToken }}
-          DiscordToken: ${{ secrets.DiscordToken }}
+          authToken: ${{ secrets.AuthToken }}
+          discordToken: ${{ secrets.discordToken }}
         run: |
           touch .env
           touch data.json
-          echo AuthToken=${{ secrets.AuthToken }} >> .env
-          echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+          echo authToken=${{ secrets.authToken }} >> .env
+          echo discordToken=${{ secrets.discordToken }} >> .env
           cat .env
         shell: sh
 
@@ -91,11 +91,11 @@ jobs:
       - name: Make .env file base on secrets
         env:
           channelId: ${{ secrets.channelId }}
-          DiscordToken: ${{ secrets.DiscordToken }}
+          discordToken: ${{ secrets.discordToken }}
         run: |
           touch .env
           echo channelId=${{ secrets.channelId }} >> .env
-          echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+          echo discordToken=${{ secrets.discordToken }} >> .env
           cat .env
         shell: sh
 
@@ -140,11 +140,11 @@ jobs:
               - name: Make .env file base on secrets
                 env:
                   channelId: ${{ secrets.channelId }}
-                  DiscordToken: ${{ secrets.DiscordToken }}
+                  discordToken: ${{ secrets.discordToken }}
                 run: |
                   touch .env
                   echo channelId=${{ secrets.channelId }} >> .env
-                  echo DiscordToken=${{ secrets.DiscordToken }} >> .env
+                  echo discordToken=${{ secrets.discordToken }} >> .env
                   echo delta=32400 >> .env
                   cat .env
                 shell: sh

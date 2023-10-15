@@ -9,13 +9,13 @@ import time
 import pickle
 
 load_dotenv()  # This reads the environment variables inside .env
-DiscordToken = os.getenv('DiscordToken', "NOT FOUND")
+discordToken = os.getenv('discordToken', "NOT FOUND")
 channelId = os.getenv('channelId', "NOT FOUND")
 
 # Check mandatory variable
 needExit = False
-if DiscordToken == "NOT FOUND":
-    print("[ERROR] DiscordToken not found in .env, you must set it in .env file to run this programme")
+if discordToken == "NOT FOUND":
+    print("[ERROR] discordToken not found in .env, you must set it in .env file to run this programme")
     needExit = True
 
 if channelId == "NOT FOUND":
@@ -213,4 +213,4 @@ async def on_ready():
     exit()
 
 # Lancez le bot
-bot.run(token=DiscordToken)
+bot.run(token=discordToken)

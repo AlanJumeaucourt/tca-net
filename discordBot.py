@@ -8,36 +8,44 @@ from dotenv import load_dotenv
 import time
 import pickle
 
-load_dotenv()  # This reads the environment variables inside .env
-discordToken = os.getenv('discordToken', "NOT FOUND")
-channelId = os.getenv('channelId', "NOT FOUND")
+def read_env():
 
-# Check mandatory variable
-needExit = False
-if discordToken == "NOT FOUND":
-    print("[ERROR] discordToken not found in .env, you must set it in .env file to run this programme")
-    needExit = True
+    load_dotenv()  # This reads the environment variables inside .env
+    global discordToken, channelId
+    discordToken = os.getenv('discordToken', "NOT FOUND")
+    channelId = os.getenv('channelId', "NOT FOUND")
 
-if channelId == "NOT FOUND":
-    print("[ERROR] channelId not found in .env, you must set it in .env file to run this programme")
-    needExit = True
+    # Check mandatory variable
+    needExit = False
+    if discordToken == "NOT FOUND":
+        print("[ERROR] discordToken not found in .env, you must set it in .env file to run this programme")
+        needExit = True
 
-if needExit:
-    print("Exiting ...")
-    exit()
+    if channelId == "NOT FOUND":
+        print("[ERROR] channelId not found in .env, you must set it in .env file to run this programme")
+        needExit = True
+
+    if needExit:
+        print("Exiting ...")
+        exit()
+
+    global delta
+    delta = os.getenv('delta', 15)
 
 
-delta = os.getenv('delta', 15)
+def get_data():
+    # Open 3 dict with the objects from crawler.py
+    global courses, rooms, professors
 
-# Open 3 dict with the objects from crawler.py
-with open('courses.pkl', 'rb') as file:
-    courses = pickle.load(file)
+    with open('courses.pkl', 'rb') as file:
+        courses = pickle.load(file)
 
-with open('rooms.pkl', 'rb') as file:
-    rooms = pickle.load(file)
+    with open('rooms.pkl', 'rb') as file:
+        rooms = pickle.load(file)
 
-with open('professors.pkl', 'rb') as file:
-    professors = pickle.load(file)
+    with open('professors.pkl', 'rb') as file:
+        professors = pickle.load(file)
+
 
 
 def blague_cours(cours):
@@ -174,6 +182,9 @@ def create_message_for_discord_bot(time: datetime, delta: float):
     else:
         return None
 
+
+read_env()
+get_data()
 
 message = create_message_for_discord_bot(
     time=datetime.now(), delta=float(delta))

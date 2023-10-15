@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import time
 import pickle
 
+
 def read_env():
 
     load_dotenv()  # This reads the environment variables inside .env
@@ -45,7 +46,6 @@ def get_data():
 
     with open('professors.pkl', 'rb') as file:
         professors = pickle.load(file)
-
 
 
 def blague_cours(cours):

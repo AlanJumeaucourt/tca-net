@@ -40,6 +40,7 @@ delta=32400
 
 ## Installation
 
+### Basic launch
 To get started with TCA-Net, follow these steps:
 
 1. Clone this repository to your local machine.
@@ -49,6 +50,14 @@ To get started with TCA-Net, follow these steps:
 5. Run the `discordBot.py` script to start the bot.
 
 Now you're ready to enjoy the features of the TCA-Net Discord bot for your classes!
+
+### Launch with docker for production
+To get started with TCA-Net for production, follow these steps:
+1. Clone this repository to your local machine.
+2. Create a `.env` file with the mandatory and optional variables as described above.
+3. Create the container image with `docker build -t tca-net .`
+5. Run the container with `docker run tca-net`
+
 
 ## How it works
 

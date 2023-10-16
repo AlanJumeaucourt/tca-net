@@ -7,7 +7,8 @@ import os
 from dotenv import load_dotenv
 import time
 import pickle
-
+from models import Course, Room, Professor
+from typing import List
 
 def read_env():
 
@@ -33,10 +34,11 @@ def read_env():
     global delta
     delta = os.getenv('delta', 15)
 
-
 def get_data():
     # Open 3 dict with the objects from crawler.py
-    global courses, rooms, professors
+    courses : List[Course] = []
+    rooms : List[Course] = []
+    professors : List[Course] = []
 
     with open('courses.pkl', 'rb') as file:
         courses = pickle.load(file)
@@ -47,6 +49,9 @@ def get_data():
     with open('professors.pkl', 'rb') as file:
         professors = pickle.load(file)
 
+    return courses, rooms, professors
+
+courses, rooms, professors = get_data()
 
 def blague_cours(cours):
     blagues = [
@@ -138,7 +143,7 @@ def blague_cours(cours):
     return blague_aleatoire
 
 
-def next_course_from_time(time: datetime, group: list = []):
+def next_course_from_time(time: datetime, group: list = []) -> Course:
     """Return next course from the time and group filter is possible
 
     Args:

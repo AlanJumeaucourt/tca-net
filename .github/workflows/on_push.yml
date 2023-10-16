@@ -27,7 +27,6 @@ jobs:
           discordToken: ${{ secrets.discordToken }}
         run: |
           touch .env
-          touch data.json
           echo authToken=${{ secrets.authToken }} >> .env
           echo discordToken=${{ secrets.discordToken }} >> .env
           cat .env
@@ -49,7 +48,7 @@ jobs:
           name: rooms
           path: rooms.pkl
 
-      - name : upload professors.pkl artifact
+      - name: upload professors.pkl artifact
         uses: actions/upload-artifact@v3
         with:
           name: professors
@@ -77,7 +76,7 @@ jobs:
         with:
           name: rooms
           path: .
-           
+
       - name: Download professors.pkl artifact
         uses: actions/download-artifact@v3
         with:
@@ -104,51 +103,79 @@ jobs:
         shell: sh
 
   discordNotifModified:
-            needs: scrapper
-            name: discordNotif with delta as 32400
-            runs-on: ubuntu-latest
-            steps:
-              - name: Check-out devops repository
-                uses: actions/checkout@v2
-                with:
-                  repository: AlanJumeaucourt/tca-net
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  path: .
-        
-              - name: Download course.pkl artifact
-                uses: actions/download-artifact@v3
-                with:
-                  name: courses
-                  path: .
-          
-              - name: Download rooms.pkl artifact
-                uses: actions/download-artifact@v3
-                with:
-                  name: rooms
-                  path: .
-                     
-              - name: Download professors.pkl artifact
-                uses: actions/download-artifact@v3
-                with:
-                  name: professors
-                  path: .
-        
-              - name: Install package
-                run: pip install -r requirements.txt
-                shell: sh
-        
-              - name: Make .env file base on secrets
-                env:
-                  channelId: ${{ secrets.channelId }}
-                  discordToken: ${{ secrets.discordToken }}
-                run: |
-                  touch .env
-                  echo channelId=${{ secrets.channelId }} >> .env
-                  echo discordToken=${{ secrets.discordToken }} >> .env
-                  echo delta=32400 >> .env
-                  cat .env
-                shell: sh
-        
-              - name: Launch discordBot.py to send notif to test server
-                run: python3 discordBot.py
-                shell: sh
+    needs: scrapper
+    name: discordNotif with delta as 32400
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out devops repository
+        uses: actions/checkout@v2
+        with:
+          repository: AlanJumeaucourt/tca-net
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: .
+
+      - name: Download course.pkl artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: courses
+          path: .
+
+      - name: Download rooms.pkl artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: rooms
+          path: .
+
+      - name: Download professors.pkl artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: professors
+          path: .
+
+      - name: Install package
+        run: pip install -r requirements.txt
+        shell: sh
+
+      - name: Make .env file base on secrets
+        env:
+          channelId: ${{ secrets.channelId }}
+          discordToken: ${{ secrets.discordToken }}
+        run: |
+          touch .env
+          echo channelId=${{ secrets.channelId }} >> .env
+          echo discordToken=${{ secrets.discordToken }} >> .env
+          echo delta=32400 >> .env
+          cat .env
+        shell: sh
+
+      - name: Launch discordBot.py to send notif to test server
+        run: python3 discordBot.py
+        shell: sh
+
+  build_container:
+    name: build the container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out devops repository
+        uses: actions/checkout@v2
+        with:
+          repository: AlanJumeaucourt/tca-net
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: .
+
+      - name: Make .env file base on secrets
+        env:
+          authToken: ${{ secrets.AuthToken }}
+          discordToken: ${{ secrets.discordToken }}
+          channelId: ${{ secrets.channelId }}
+        run: |
+          touch .env
+          echo authToken=${{ secrets.authToken }} >> .env
+          echo discordToken=${{ secrets.discordToken }} >> .env
+          echo channelId=${{ secrets.channelId }} >> .env
+          cat .env
+        shell: sh
+
+      - name: build the container
+        run: docker build -t tca-net .
+        shell: sh

@@ -1,8 +1,8 @@
 # START CRON JOB
 
-# At minute 0 past every 2nd hour from 6 through 20.
-0 6-20/2 * * * /usr/local/bin/python /app/crawler.py > /proc/1/fd/1 2>/proc/1/fd/2
+# https://crontab.guru/#30_6-20/2_*_*_*
+30 6-20/2 * * * cd /app && /usr/local/bin/python /app/crawler.py > /proc/1/fd/1 2>/proc/1/fd/2
 
-# At every 15th minute past every hour from 7 through 20.   
-*/15 7-20 * * * /usr/local/bin/python /app/discordBot.py > /proc/1/fd/1 2>/proc/1/fd/2
+# https://crontab.guru/#*/15_7-20_*_*_*
+*/15 7-20 * * * cd /app && /usr/local/bin/python /app/discordBot.py > /proc/1/fd/1 2>/proc/1/fd/2
 # END CRON JOB

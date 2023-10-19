@@ -1,4 +1,3 @@
-import icalendar
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -6,23 +5,25 @@ import json
 import re
 import os
 from dotenv import load_dotenv
+from models import Professor, Room, Course
+import pickle
 
 
-load_dotenv()  # This reads the environment variables inside .env
-AuthToken = os.getenv('AuthToken', "NOT FOUND")
+def read_env():
+    load_dotenv()  # This reads the environment variables inside .env
+    authToken = os.getenv('authToken', "NOT FOUND")
 
-# Check mandatory variable
-needExit = False
-if AuthToken == "NOT FOUND":
-    print("[ERROR] AuthToken not found in .env, you must set it in .env file to run this programme")
-    needExit = True
+    # Check mandatory variable
+    needExit = False
+    if authToken == "NOT FOUND":
+        print("[ERROR] authToken not found in .env, you must set it in .env file to run this programme")
+        needExit = True
 
-if needExit:
-    print("Exiting ...")
-    exit()
+    if needExit:
+        print("Exiting ...")
+        exit()
 
-
-url = 'https://tc-net.insa-lyon.fr/aff/AffichageEdtPalmGroupe.jsp?promo=4&groupe=4&dateDeb=1696111200000'
+    return authToken
 
 allLocations = []
 linkLocationMaps = {"1-Amphi huma ouest": "",
@@ -237,7 +238,7 @@ def getCourBymatiere(matiere):
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Authorization': f"Basic {AuthToken}",
+        'Authorization': f"Basic {authToken}",
         'Cache-Control': 'max-age=0',
         'Connection': 'keep-alive',
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -263,7 +264,8 @@ def getCourBymatiere(matiere):
         }
 
     try:
-        response = requests.post(url, headers=headers, data=data(matiere=matiere))
+        response = requests.post(url, headers=headers,
+                                 data=data(matiere=matiere))
     except:
         print(f"Error in requesting {url} for getting {matiere}")
         print(f"Exiting ...")
@@ -283,15 +285,16 @@ def getCourBymatiere(matiere):
         ligne = str(data_rows[0]).strip().split('\n')[1:-1]
 
         # Parser le texte
-        cours = []
+        baseCourses = []
         for l in ligne:
             # print(l)
             elements = l.split()
-            elements2 = l.split("  ")
             Enseignant = ""
-            for e in elements2:
-                if "[" in e and "]" in e:
-                    Enseignant = e
+            try:
+                Enseignant = re.findall(r'\[(.*?)\]', l)[0]
+                # print(Enseignant)
+            except:
+                Enseignant = ""
 
             try:
                 autre = re.findall(r'\{(.*?)\}', l)[0]
@@ -305,7 +308,7 @@ def getCourBymatiere(matiere):
 
             if salle == "000000000":
                 salle = "Pas de salle (000000000)"
-            cours.append({
+            baseCourses.append({
                 "Matiere": matiere,
                 # Enlève la virgule à la fin de la semaine
                 "Semaine": elements[1][:-1],
@@ -317,44 +320,109 @@ def getCourBymatiere(matiere):
                 "Salle": salle,
                 "Autres": autre,
             })
-        return cours
+        return baseCourses
 
 
-cours = []
-cours_tries = []
+def getAllCourses():
+    baseCourses = []
+    for matiere in matieres:
+        if "4TC" in matiere and matiere != "4TC-SIR-2023":
+            print(f"Crawling : {matiere}")
+            listCour = getCourBymatiere(matiere)
+            for course in listCour:
+                baseCourses.append(course)
 
-# print(getCourBymatiere("4TC-INS1-2023"))
-# exit()
-for matiere in matieres:
-    if "4TC" in matiere and matiere != "4TC-SIR-2023":
-        print(f"Crawling : {matiere}")
-        listCour = getCourBymatiere(matiere)
-        for cour in listCour:
-            cours.append(cour)
+    sorted_courses = sorted(
+        baseCourses, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
 
-
-cours_tries = sorted(
-    cours, key=lambda x: datetime.strptime(x['Date'], "%d/%m/%Y"))
-
-# with open('data.json', 'r') as fp:
-#     cours_tries = json.load(fp)
-
-print(cours_tries)
-
-enseignants = []
-for cour in cours_tries:
-    if cour['Enseignant'] not in enseignants:
-        enseignants.append(cour['Enseignant'])
-
-print(enseignants)
-
-Salles = []
-for cour in cours_tries:
-    if cour['Salle'] not in Salles:
-        Salles.append(cour['Salle'])
-
-print(Salles)
+    return sorted_courses
 
 
-with open('data.json', 'w') as fp:
-    json.dump(cours_tries, fp)
+def get_professors():
+    enseignants = []
+    for course in baseCourses:
+        if course['Enseignant'] not in enseignants:
+            if "," in course['Enseignant']:
+                prof = course['Enseignant'].split(",")
+                for p in prof:
+                    if p not in enseignants and "Cours" not in p:
+                        enseignants.append(p.strip('{}[] '))
+            else:
+                enseignants.append(
+                    str(course['Enseignant']).strip().strip("[]"))
+
+    return {name: Professor(trigramm=name) for name in enseignants}
+
+
+def get_rooms():
+    Salles = []
+
+    for course in baseCourses:
+        if course['Salle'] not in Salles and course['Salle']:
+            Salles.append(course['Salle'])
+
+    return {room: Room(room_name=room) for room in Salles}
+
+
+def get_courses():
+    courses = {}
+    for i, data in enumerate(baseCourses):
+        start_time = datetime.strptime(
+            data["Date"]+" "+data["Heure"].split("-")[0], "%d/%m/%Y %Hh%M")
+        end_time = datetime.strptime(
+            data["Date"]+" "+data["Heure"].split("-")[1], "%d/%m/%Y %Hh%M")
+        courses[i] = courses.get(i, Course(
+            id=i,
+            matiere=data["Matiere"],
+            group=data["Groupe"],
+            start_time=start_time,
+            end_time=end_time,
+            course_info=data["Autres"],
+            professors=[prof for i, prof in professors.items() if i ==
+                        data["Enseignant"]],
+            rooms=[room for i, room in rooms.items() if room.room_name ==
+                   data["Salle"]],
+        ))
+    return courses
+
+
+def dump_data():
+    with open('courses.pkl', 'wb') as fp:
+        pickle.dump(courses, fp)
+
+    with open('rooms.pkl', 'wb') as fp:
+        pickle.dump(rooms, fp)
+
+    with open('professors.pkl', 'wb') as fp:
+        pickle.dump(professors, fp)
+
+
+authToken = read_env()
+
+baseCourses = getAllCourses()
+# print(baseCourses)
+
+professors = get_professors()
+# print(professors)
+
+# print("\nprofessors :")
+# for i, prof in professors.items():
+#     print(f"{prof}")
+# print("\n")
+
+rooms = get_rooms()
+# print(rooms)
+
+# print("\nrooms :")
+# for i, room in rooms.items():
+#     print(f"{room}")
+# print("\n")
+
+courses = get_courses()
+# print(courses)
+
+# for i, course in courses.items():
+#     print(course)
+
+
+dump_data()

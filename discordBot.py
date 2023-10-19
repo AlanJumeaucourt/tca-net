@@ -1,39 +1,55 @@
 # IMPORT DISCORD.PY. ALLOWS ACCESS TO DISCORD'S API.
 import discord
-import json
 from datetime import datetime, timedelta
 from discord.ext import commands
 import random
 import os
 from dotenv import load_dotenv
 import time
-
-load_dotenv()  # This reads the environment variables inside .env
-DiscordToken = os.getenv('DiscordToken', "NOT FOUND")
-channelId = os.getenv('channelId', "NOT FOUND")
-
-# Check mandatory variable
-needExit = False
-if DiscordToken == "NOT FOUND":
-    print("[ERROR] DiscordToken not found in .env, you must set it in .env file to run this programme")
-    needExit = True
-
-if channelId == "NOT FOUND":
-    print("[ERROR] channelId not found in .env, you must set it in .env file to run this programme")
-    needExit = True
-
-if needExit:
-    print("Exiting ...")
-    exit()
+import pickle
+from models import Course, Room, Professor
+from typing import List, Dict
 
 
-delta = os.getenv('delta', 15)
+def read_env():
+    load_dotenv()  # This reads the environment variables inside .env
+    discordToken: str = os.getenv('discordToken', "NOT FOUND")
+    channelId: str = os.getenv('channelId', "NOT FOUND")
 
-cours_tries = []
-message1 = ""
-now = datetime.now()
+    # Check mandatory variable
+    needExit = False
+    if discordToken == "NOT FOUND":
+        print("[ERROR] discordToken not found in .env, you must set it in .env file to run this programme")
+        needExit = True
 
-print(f"now = {now}")
+    if channelId == "NOT FOUND":
+        print("[ERROR] channelId not found in .env, you must set it in .env file to run this programme")
+        needExit = True
+
+    if needExit:
+        print("Exiting ...")
+        exit()
+
+    delta: str = os.getenv('delta', "15")
+    return discordToken, channelId, delta
+
+
+def get_data():
+    # Open 3 dict with the objects from crawler.py
+    courses: Dict[str, Course] = {}
+    rooms: Dict[str, Room] = {}
+    professors: Dict[str, Professor] = {}
+
+    with open('courses.pkl', 'rb') as file:
+        courses = pickle.load(file)
+
+    with open('rooms.pkl', 'rb') as file:
+        rooms = pickle.load(file)
+
+    with open('professors.pkl', 'rb') as file:
+        professors = pickle.load(file)
+
+    return courses, rooms, professors
 
 
 def blague_cours(cours):
@@ -126,40 +142,66 @@ def blague_cours(cours):
     return blague_aleatoire
 
 
-with open('data.json', 'r') as fp:
-    cours_tries = json.load(fp)
+def next_course_from_time(courses: Dict[str, Course], time: datetime, group: list = []) -> Course:
+    """Return next course from the time and group filter is possible
 
-    # Afficher les cours triés
-    for c in cours_tries:
-        date_debut_cour = datetime.strptime(
-            c['Date']+" "+c['Heure'].split("-")[0], "%d/%m/%Y %Hh%M")
-        date_debut_moins_15 = date_debut_cour - timedelta(minutes=float(delta))
+    Args:
+        time (datetime): Return next course from this time
+        group (list, optional): Group filter. Defaults to [].
 
-        if (c["Groupe"] == "4TC" or c["Groupe"] == "4TC-G4"):
+    Returns:
+        Course: _description_
+    """
+    for course in courses.values():
+        if group:
+            if (course.group in group):
+                if course.start_time >= time:
+                    return course
+        else:
+            if course.start_time >= time:
+                return course
 
-            if date_debut_moins_15 <= now <= date_debut_cour:
-                print(c)
-                print("in between")
-                print(f"date_debut_cour : {date_debut_cour}")
-                print(f"date_debut_moins_15 : {date_debut_moins_15}")
-                message1 = f"""@everyone {blague_cours("**" + c['Matiere'] + "**")}
+    raise ValueError("No course found for the given time and group.")
 
-**Infos :**
-- **Matière :** {c['Matiere']}
-- **Date et Heure :** {c['Date']} de {c['Heure']}
-- **Groupe :** {c['Groupe']}
-- **Type :** {c['Type']}
-- **Enseignant :** {c['Enseignant']}
-- **Salle :** {c['Salle']}
-- **Autres :** {c['Autres']}
-"""
 
-            else:
-                pass
-    if message1 == "":
-        print("message is empty, no courses in less than 15min")
-        print("Exiting ...")
-        exit()
+def create_message_for_discord_bot(courses: Dict["str", Course], time: datetime, delta: float) -> str:
+    try:
+        course = next_course_from_time(courses=courses,
+                                       time=datetime.now(), group=["4TC", "4TC-G4"])
+    except ValueError:
+        print("Oops, no 'foo' found")
+
+    start_date_minus_delta = course.start_time - \
+        timedelta(minutes=float(delta))
+
+    if start_date_minus_delta <= datetime.now() <= course.start_time:
+        print(course)
+        return f"""@everyone {("**" + course.matiere + "**")}
+
+    **Infos :**
+    - **Matière :** {course.matiere}
+    - **Date et Heure :** {course.start_time}
+    - **Groupe :** {course.group}
+    - **Type :** {course.group}
+    - **Enseignant :** {", ".join(str(room) for room in course.professors)}
+    - **Salle :** {", ".join(str(room) for room in course.rooms)}
+    - **Autres infos :** {course.course_info}
+    """
+
+    else:
+        raise ValueError("No course found for the given time and group")
+
+
+discordToken, channelId, delta = read_env()
+courses, rooms, professors = get_data()
+
+try:
+    message = create_message_for_discord_bot(courses=courses,
+                                             time=datetime.now(), delta=float(delta))
+except ValueError:
+    print(f"message is empty, no courses in less than {delta} minutes")
+    print("Exiting ...")
+    exit()
 
 intents = discord.Intents.default()
 intents.typing = False  # Désactive la surveillance de la frappe
@@ -175,7 +217,7 @@ async def envoyer_message():
     channel = bot.get_channel(int(channelId))
 
     if channel:
-        await channel.send(message1)
+        await channel.send(message)
     else:
         print("Le canal n'a pas été trouvé.")
 
@@ -192,4 +234,4 @@ async def on_ready():
     exit()
 
 # Lancez le bot
-bot.run(token=DiscordToken)
+bot.run(token=discordToken)

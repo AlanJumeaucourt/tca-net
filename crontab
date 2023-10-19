@@ -1,0 +1,8 @@
+# START CRON JOB
+
+# https://crontab.guru/#30_6-20/2_*_*_*
+30 6-20/2 * * * cd /app && /usr/local/bin/python /app/crawler.py > /proc/1/fd/1 2>/proc/1/fd/2
+
+# https://crontab.guru/#*/15_7-20_*_*_*
+*/15 7-20 * * * cd /app && /usr/local/bin/python /app/discordBot.py > /proc/1/fd/1 2>/proc/1/fd/2
+# END CRON JOB

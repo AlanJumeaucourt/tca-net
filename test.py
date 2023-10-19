@@ -1,63 +1,90 @@
-from __future__ import print_function
+import pickle
+from models import Professor, Room, Course
+from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
-import datetime
-import os.path
+# Open 3 dict with the objects from crawler.py
+with open('courses.pkl', 'rb') as file:
+    courses = pickle.load(file)
+    
+print("\courses :")
+for i, j in courses.items():
+    print(f"{j}")
+print("\n")
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+with open('rooms.pkl', 'rb') as file:
+    rooms = pickle.load(file)
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+print("\nrooms :")
+for i, j in rooms.items():
+    print(f"{j}")
+print("\n")
 
 
-def main():
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
+with open('professors.pkl', 'rb') as file:
+    professors = pickle.load(file)
+
+print("\n professors :")
+for i, j in courses.items():
+    print(f"{j}")
+print("\n")
+
+
+for i, course in courses.items():
+    print(course)
+
+load_dotenv()  # This reads the environment variables inside .env
+delta = os.getenv('delta', 15)
+
+def next_course_from_time(time: datetime, group: list = []):
+    """Return next course from the time and group filter is possible
+
+    Args:
+        time (datetime): Return next course from this time
+        group (list, optional): Group filter. Defaults to [].
+
+    Returns:
+        Course: _description_
     """
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+    for i, course in courses.items():
+        if group:
+            if (course.group in group):
+                if course.start_time >= time:
+                    return course
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    try:
-        service = build('calendar', 'v3', credentials=creds)
-
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
-        events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-        events = events_result.get('items', [])
-
-        if not events:
-            print('No upcoming events found.')
-            return
-
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
-
-    except HttpError as error:
-        print('An error occurred: %s' % error)
+            if course.start_time >= time:
+                return course
 
 
-if __name__ == '__main__':
-    main()
+
+print("testt")
+t = next_course_from_time(time=datetime.now(), group=["4TC", "4TC-G4"])
+print(t)
+print("fin test")
+
+message1 = ""
+course=next_course_from_time(time=datetime.now(), group=["4TC", "4TC-G4"])
+start_date_minus_delta = course.start_time - timedelta(minutes=float(delta))
+
+if start_date_minus_delta <= datetime.now() <= course.start_time:
+    print(course)
+    message1 = f"""@everyone {("**" + course.matiere + "**")}
+
+**Infos :**
+- **Matière :** {course.matiere}
+- **Date et Heure :** {course.start_time}
+- **Groupe :** {course.group}
+- **Type :** {course.group}
+- **Enseignant :** {", ".join(str(room) for room in course.professors)}
+- **Salle :** {", ".join(str(room) for room in course.rooms)}
+- **Autres infos :** {course.course_info}
+"""
+
+
+if message1 == "":
+    print(f"message is empty, no courses in less than {delta} minutes")
+    print("Exiting ...")
+    exit()
+
+print(message1)

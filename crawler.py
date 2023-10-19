@@ -11,7 +11,6 @@ import pickle
 
 def read_env():
     load_dotenv()  # This reads the environment variables inside .env
-    global authToken
     authToken = os.getenv('authToken', "NOT FOUND")
 
     # Check mandatory variable
@@ -24,6 +23,7 @@ def read_env():
         print("Exiting ...")
         exit()
 
+    return authToken
 
 allLocations = []
 linkLocationMaps = {"1-Amphi huma ouest": "",
@@ -397,7 +397,7 @@ def dump_data():
         pickle.dump(professors, fp)
 
 
-read_env()
+authToken = read_env()
 
 baseCourses = getAllCourses()
 # print(baseCourses)

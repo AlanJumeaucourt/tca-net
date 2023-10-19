@@ -8,14 +8,13 @@ from dotenv import load_dotenv
 import time
 import pickle
 from models import Course, Room, Professor
-from typing import List
+from typing import List, Dict
+
 
 def read_env():
-
     load_dotenv()  # This reads the environment variables inside .env
-    global discordToken, channelId
-    discordToken = os.getenv('discordToken', "NOT FOUND")
-    channelId = os.getenv('channelId', "NOT FOUND")
+    discordToken: str = os.getenv('discordToken', "NOT FOUND")
+    channelId: str = os.getenv('channelId', "NOT FOUND")
 
     # Check mandatory variable
     needExit = False
@@ -31,14 +30,15 @@ def read_env():
         print("Exiting ...")
         exit()
 
-    global delta
-    delta = os.getenv('delta', 15)
+    delta: str = os.getenv('delta', "15")
+    return discordToken, channelId, delta
+
 
 def get_data():
     # Open 3 dict with the objects from crawler.py
-    courses : List[Course] = []
-    rooms : List[Course] = []
-    professors : List[Course] = []
+    courses: Dict[str, Course] = {}
+    rooms: Dict[str, Room] = {}
+    professors: Dict[str, Professor] = {}
 
     with open('courses.pkl', 'rb') as file:
         courses = pickle.load(file)
@@ -51,7 +51,6 @@ def get_data():
 
     return courses, rooms, professors
 
-courses, rooms, professors = get_data()
 
 def blague_cours(cours):
     blagues = [
@@ -143,7 +142,7 @@ def blague_cours(cours):
     return blague_aleatoire
 
 
-def next_course_from_time(time: datetime, group: list = []) -> Course:
+def next_course_from_time(courses: Dict[str, Course], time: datetime, group: list = []) -> Course:
     """Return next course from the time and group filter is possible
 
     Args:
@@ -153,7 +152,7 @@ def next_course_from_time(time: datetime, group: list = []) -> Course:
     Returns:
         Course: _description_
     """
-    for i, course in courses.items():
+    for course in courses.values():
         if group:
             if (course.group in group):
                 if course.start_time >= time:
@@ -162,10 +161,15 @@ def next_course_from_time(time: datetime, group: list = []) -> Course:
             if course.start_time >= time:
                 return course
 
+    raise ValueError("No course found for the given time and group.")
 
-def create_message_for_discord_bot(time: datetime, delta: float):
-    course = next_course_from_time(
-        time=datetime.now(), group=["4TC", "4TC-G4"])
+
+def create_message_for_discord_bot(courses: Dict["str", Course], time: datetime, delta: float) -> str:
+    try:
+        course = next_course_from_time(courses=courses,
+                                       time=datetime.now(), group=["4TC", "4TC-G4"])
+    except ValueError:
+        print("Oops, no 'foo' found")
 
     start_date_minus_delta = course.start_time - \
         timedelta(minutes=float(delta))
@@ -185,15 +189,16 @@ def create_message_for_discord_bot(time: datetime, delta: float):
     """
 
     else:
-        return None
+        raise ValueError("No course found for the given time and group")
 
 
-read_env()
-get_data()
+discordToken, channelId, delta = read_env()
+courses, rooms, professors = get_data()
 
-message = create_message_for_discord_bot(
-    time=datetime.now(), delta=float(delta))
-if message is None:
+try:
+    message = create_message_for_discord_bot(courses=courses,
+                                             time=datetime.now(), delta=float(delta))
+except ValueError:
     print(f"message is empty, no courses in less than {delta} minutes")
     print("Exiting ...")
     exit()

@@ -8,7 +8,7 @@ charset-normalizer==3.3.0
 discord.py==2.3.2
 frozenlist==1.4.0
 icalendar==5.0.10
-idna==3.4
+idna==3.6
 multidict==6.0.4
 python-dateutil==2.8.2
 python-dotenv==1.0.0
